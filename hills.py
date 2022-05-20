@@ -56,10 +56,11 @@ class Hill:
             for value in row:
                 value=round(value, 3);
                 if(value.is_integer()):
-                    print(value);
+                    # print(value);
+                    pass;
                 else:
                     print(value);
-                    print(round(value, 3));
+                    # print(round(value, 3));
                     raise Exception("value is not integer");
                     # value=self.inv_mod(value)
                     # pass;
@@ -76,9 +77,20 @@ class Hill:
             new_number=round(new_number, 3)
             i+=1;
         return new_number;
-matriz = np.array([[1,2,3], [4,5,8], [7,8,9]])
-matriz_inv=np.linalg.inv(matriz)
+matriz = np.array([[1, 2],[2, 2]])
+det=np.linalg.det( matriz )%26
+k_1=(-det+26)**-1
+print(k_1);
+matriz_inv=(k_1*np.linalg.inv(matriz))%27
+print(matriz_inv);
 hullCript=Hill(matriz)
+text=input();
+text_cifred=hullCript.cifre(text);
+print(f"Texto cifrado: {text_cifred}");
+hull_decript=Hill(matriz_inv)
+text_decifred=hull_decript.cifre(text_cifred);
+print(f"Texto decifrado: {text_decifred}");
+
 # def is_all_int(matriz):
 #     for a in matriz:
 #         for b in a:
@@ -86,40 +98,15 @@ hullCript=Hill(matriz)
 #                 return False;
 #     return True;
 # print(is_all_int(matriz_inv));
-matriz_inv=matriz_inv*3*4*matriz
-print(matriz_inv*3*4*matriz)
-i=1;
+# matriz_inv=matriz_inv*3*4*matriz
+# print(matriz_inv*3*4*matriz)
+# i=1;
 # while (not is_all_int(matriz_inv*i)):
 #     i+=1;
 # if(is_all_int(matriz_inv*i)):
 #         matriz_inv=matriz_inv*i;
-text=input();
-text_cifred=hullCript.cifre(text);
-print(text_cifred);
-hull_decript=Hill(matriz_inv)
-text_decifred=hull_decript.cifre(text_cifred);
-print(text_decifred);
 
-# def cifre_hills(text,matriz):
-#     new_text=''
-#     newMat=[]
-#     for a in range(nrows):
-#         row=[]
-#         for b in range(ncols):
-#             value=alfabeto.index(text[i]);
-#             row.append(value)
-#             i=i+1
-#         newMat.append(row);
-#     newMat= np.array(newMat)
-#     print(newMat)
-#     cifred= np.matmul(newMat,matriz)
-#     for row in cifred:
-#         for value in row:
-#             # int to char conversion
-#             new_value=value%alfabetoLen
-#             # print(new_value)
-#             new_text.append(alfabeto[new_value])
-#     return new_text
+
 # print("")
 # print(cifred)
 # no_cifred= np.matmul(cifred,matriz_inv)
