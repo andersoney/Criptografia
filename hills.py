@@ -1,114 +1,160 @@
+import random
 from scipy import linalg
 import numpy as np
-alfabeto='abcdefghijklmnopqrstuvwxyz '
-alfabetoLen=len(alfabeto);
-import random
-# print(linalg.det(a));
-i=0
+# from mypackage.hill import Hill
+
+
 class Hill:
-    def __init__(self,matriz,alfabeto='abcdefghijklmnopqrstuvwxyz '):
-        self.len_matriz=matriz.shape[0]*matriz.shape[1];
-        self.matriz=matriz
-        self.alfabeto=alfabeto
-        self.alfabeto_len=len(self.alfabeto)
-    def make_box(self,text):
-        resto=len(text)%self.len_matriz
-        if(resto!=0):
-            for _ in range(self.len_matriz-resto):
-                text=text+alfabeto[random.randint(0, self.alfabeto_len-1)];
-            pass;
-        print(text);
-        num_interaction=len(text)/self.len_matriz
-        # print(num_interaction);
-        # print(int(num_interaction));
-        matrizes=[]
-        for _ in range(int(len(text)/self.len_matriz)):
-            new_mat=[]
-            # print(self.matriz[0])
-            for cols in self.matriz:
-                # print(row);
-                row=[]
-                for _ in cols:
-                    value=alfabeto.index(text[0]);
-                    row.append(value)
-                    text=text[1:]
-                new_mat.append(row);
-            matrizes.append(new_mat)
-            pass;
-        # print(text);
-        return matrizes,text;
+    def find_multiplicative_inverse(self, determinant, len_alfabeto):
+        for i in range(len_alfabeto):
+            inverse = determinant * i
+            # print(f"inverse: {inverse}-{inverse % len_alfabeto}")
+            if inverse % len_alfabeto == 1:
+                # print(f"multiplicative_inverse:{i}\tlen_alfabeto:{len_alfabeto}")
+                return i
+        raise Exception("Não encontrado inverse multiplicative")
 
-    def cifre(self,text):
-        matrizes,text=self.make_box(text);
-        cifred_text='';
-        # print(matrizes,text)
-        for box in matrizes:
-            cifred_matriz= np.matmul(box,self.matriz)
-            cifred_matriz=cifred_matriz%(self.alfabeto_len-1)
-            # print(cifred_matriz)
-            cifred_text=cifred_text+self.passToText(cifred_matriz)
-        return cifred_text;
+    def get_inverse(self, matriz, len_alfabeto):
+        determinant = np.linalg.det(matriz)
+        determinant = int(round(determinant, 1))
+        print(f"Determinante: {determinant%len_alfabeto}")
+        multiplicative_inverse = self.find_multiplicative_inverse(
+            determinant, len_alfabeto)
+        # print(f"multiplicative_inverse:{multiplicative_inverse}")
+        matriz_inv = np.linalg.inv(matriz)*determinant
+        matriz_inv = matriz_inv*multiplicative_inverse % len_alfabeto
+        return matriz_inv
 
-    def passToText(self,cifredMatriz):
-        # print(cifredMatriz);
-        new_text=''
-        for row in cifredMatriz:
-            for value in row:
-                value=round(value, 3);
-                if(value.is_integer()):
-                    # print(value);
-                    pass;
-                else:
-                    print(value);
-                    # print(round(value, 3));
-                    raise Exception("value is not integer");
-                    # value=self.inv_mod(value)
-                    # pass;
-                # new_value=value%alfabetoLen
-                new_value=int(value);
-                new_text=new_text+alfabeto[new_value]
-        return new_text;
-    def inv_mod(self,number):
-        new_number=number
-        i=2;
-        while(not new_number.is_integer()):
-            new_number=number*i;
-            # print(round(new_number, 3));
-            new_number=round(new_number, 3)
-            i+=1;
-        return new_number;
-matriz = np.array([[1, 2],[2, 2]])
-det=np.linalg.det( matriz )%26
-k_1=(-det+26)**-1
-print(k_1);
-matriz_inv=(k_1*np.linalg.inv(matriz))%27
-print(matriz_inv);
-hullCript=Hill(matriz)
-text=input();
-text_cifred=hullCript.cifre(text);
-print(f"Texto cifrado: {text_cifred}");
-hull_decript=Hill(matriz_inv)
-text_decifred=hull_decript.cifre(text_cifred);
-print(f"Texto decifrado: {text_decifred}");
+    def mult_matrix(self, matriz1, matriz2, len_alfabeto):
+        # print(f"Matriz 1:\n{matriz1}")
+        # print(f"Matriz 2:\n{matriz2}")
+        return np.matmul(matriz1, matriz2) % len_alfabeto
 
-# def is_all_int(matriz):
-#     for a in matriz:
-#         for b in a:
-#             if(not b.is_integer()):
-#                 return False;
-#     return True;
-# print(is_all_int(matriz_inv));
-# matriz_inv=matriz_inv*3*4*matriz
-# print(matriz_inv*3*4*matriz)
-# i=1;
-# while (not is_all_int(matriz_inv*i)):
-#     i+=1;
-# if(is_all_int(matriz_inv*i)):
-#         matriz_inv=matriz_inv*i;
+    def normalize_text(self, text, len_matriz):
+        len_text = len(text)
+        resto = len_text % len_matriz
+        if(resto != 0):
+            for _ in range(len_matriz-resto):
+                text = text+'o'
+            pass
+        else:
+            pass
+        # print(text)
+        len_text = len(text)
+        return text, len_text
+
+    def one_matriz_convert(self, lenx, leny, alfabeto, text):
+        arrays = []
+        for _ in range(lenx):
+            row = []
+            for _ in range(leny):
+                # print(text[0],alfabeto.index(text[0]));
+                row.append(alfabeto.index(text[0]))
+                text = text[1:]
+                # print(text);
+                pass
+            arrays.append(row)
+        local_matriz = np.array(arrays, dtype=np.float64)
+        return local_matriz, text
+
+    def convert_text_to_matrizes(self, text, shape, alfabeto):
+        len_matriz = shape[0]*shape[1]
+        text, len_text = self.normalize_text(text, len_matriz)
+        num_natrizes = int(len_text/len_matriz)
+        # print(num_natrizes)
+
+        matrizes = []
+        for _ in range(num_natrizes):
+            local_matriz, text = self.one_matriz_convert(
+                shape[0], shape[1], alfabeto, text)
+            matrizes.append(local_matriz)
+            pass
+        # print(text)
+        # print(matrizes)
+        return matrizes
+
+    def convert_matriz_to_text(self, matriz, alfabeto):
+        # print(matriz)
+        text = ''
+        for row in matriz:
+            for col in row:
+                # print(col)
+                text += alfabeto[int(col)]
+        return text
+
+    def encript(self, text, matriz, alfabeto):
+        len_alfabeto = len(alfabeto)
+        matriz_inv = self.get_inverse(matriz, len(alfabeto))
+        # print(f"matriz_inv:\n{matriz_inv}")
+        matrizes = self.convert_text_to_matrizes(text, matriz.shape, alfabeto)
+        matriz_cripto = []
+        for matriz_text in matrizes:
+            # print(matriz_text)
+            cripto = self.mult_matrix(matriz_text, matriz, len_alfabeto)
+            # print(cripto)
+
+            # print(decripto)
+            matriz_cripto.append(cripto)
+        cripto_text = ''
+        for matriz_c in matriz_cripto:
+            cripto_text += self.convert_matriz_to_text(matriz_c, alfabeto)
+        return cripto_text
+
+    def decript(self, cripto_text, matriz, alfabeto):
+        len_alfabeto = len(alfabeto)
+        matriz_inv = self.get_inverse(matriz, len(alfabeto))
+        matrizes_cript = self.convert_text_to_matrizes(
+            cripto_text, matriz.shape, alfabeto)
+        matriz_decripto = []
+        for matriz_text in matrizes_cript:
+            decripto = self.mult_matrix(matriz_text, matriz_inv, len_alfabeto)
+            matriz_decripto.append(decripto)
+        decripto_text = ''
+        for matriz_d in matriz_decripto:
+            decripto_text += self.convert_matriz_to_text(matriz_d, alfabeto)
+        return decripto_text
 
 
-# print("")
-# print(cifred)
-# no_cifred= np.matmul(cifred,matriz_inv)
-# print(no_cifred)
+def testando_fatores_iniciais(alfabeto):
+    hill = Hill()
+    len_alfabeto = len(alfabeto)
+    matriz2 = np.array([[2,  2], [14, 26]], dtype=np.float64)
+    # print(f"Testando fatores Iniciais\n {'_'*100}")
+    matriz = np.array([[9, 4], [5, 7]], dtype=np.float64)
+    print(f"matriz: \n{matriz}")
+    matriz_inv = hill.get_inverse(matriz, len(alfabeto))
+    print(f"Inversa:\n{matriz_inv}")
+    print(
+        f"Matriz e Inversa: \n{hill.mult_matrix(matriz, matriz_inv, len_alfabeto)}")
+    print(f"Testando criptografia e decriptografia\n{'&'*100}")
+    print(matriz2)
+    cripto = hill.mult_matrix(matriz2, matriz, len_alfabeto)
+    print(cripto)
+    decripto = hill.mult_matrix(cripto, matriz_inv, len_alfabeto)
+    print(decripto)
+    return matriz_inv
 
+
+hill = Hill()
+alfabeto = 'abcdefghijklmnopqrstuvwxyz'
+# matriz_inv = testando_fatores_iniciais(alfabeto)
+# exit()
+
+if(__name__ == '__main__'):
+    matriz = np.array([[19,  4, 18],
+                       [19,  0, 13],
+                       [3, 14, 26]], dtype=np.float64)
+    chave = 'cababababababa'
+    # matriz,text = hill.one_matriz_convert(3,3,alfabeto,chave)
+    matriz = np.array([[9, 4], [5, 7]], dtype=np.float64)
+    print(f"Chave:\n{matriz}\tlen_alfabeto:{len(alfabeto)}")
+    matriz_inv = hill.get_inverse(matriz, len(alfabeto))
+    # text = "totestando nao me enche ze!\\\\\\\'\"".lower()
+    text = input()
+    text = text.replace(' ', '')
+    cripto_text = hill.encript(text, matriz, alfabeto)
+    print(cripto_text)
+    print(f"Decriptando:")
+    decripto_text = hill.decript(cripto_text, matriz, alfabeto)
+    print(decripto_text)
+pass
